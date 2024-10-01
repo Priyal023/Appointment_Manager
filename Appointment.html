@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Manager</title>
+    <style>
+      body {
+        background-image: url("image.png");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-color: rgba(240, 248, 255, 0.242);
+        background-blend-mode: overlay;
+
+        font-family: "Arial", sans-serif;
+
+        margin: 1.5em 8em 2em 8em;
+      }
+      .AddingTask {
+        display: flex;
+        flex-direction: row;
+        gap: 2rem;
+      }
+      .container {
+        background: rgb(102, 101, 157, 0.5);
+        backdrop-filter: blur(10px);
+
+        width: 40rem;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      #inputBox {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+      }
+      input {
+        width: 30%;
+        padding: 0.8rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        padding: 0.8rem 1.2rem;
+        background-color: rgb(0, 0, 0);
+        color: rgb(239, 237, 237);
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+        font-size: 1rem;
+      }
+      button:hover {
+        background-color: #68c8c0e5;
+      }
+      #taskList,
+      #CompletedContainer {
+        /* margin-top: 1.5rem; */
+        text-align: left;
+      }
+      .container h1,
+      #CompletedContainer h1 {
+        color: rgb(251, 245, 255);
+        text-shadow: 2px 2px 4px #000000;
+        text-align: center;
+      }
+      .task {
+        background-color: white;
+        padding: 0.8rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-size: 1rem;
+        color: black;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: move;
+      }
+      .task input {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      #CompletedContainer {
+        background: rgba(163, 184, 214, 0.5);
+        backdrop-filter: blur(10px);
+        width: 30rem;
+        height: 27rem;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0px 8px 15px rgba(254, 254, 254, 0.1);
+        text-align: center;
+      }
+      .title {
+        text-align: center;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size: 3rem;
+        color: rgb(255, 255, 255);
+        text-shadow: 2px 2px 4px #000000;
+
+        margin: 0;
+        padding: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="title">Appointment Manager</div>
+    <div class="AddingTask">
+      <div class="container">
+        <h1>Schedule Your Tasks🗓️</h1>
+        <div id="inputBox">
+          <input type="text" id="input" placeholder="Enter your task..." />
+          <input type="date" id="dateInput" />
+          <input type="time" id="timeInput" />
+          <button type="button" id="add" onclick="addTask()">Add</button>
+        </div>
+        <div id="taskList"></div>
+      </div>
+      <div id="CompletedContainer">
+        <h1>Completed Tasks ☑️</h1>
+      </div>
+    </div>
+    <script>
+      const tasks = {};
+      const sortedArr = {};
+
+      function addTask() {
+        const input = document.getElementById("input").value.trim();
+        const dateValue = document.getElementById("dateInput").value;
+        const timeValue = document.getElementById("timeInput").value;
+        const taskList = document.getElementById("taskList");
+
+        if (input === "" || dateValue === "" || timeValue === "") {
+          alert("Please fill out all fields before adding the task.");
+          return;
+        }
+
+        const dateTime = `${dateValue} ${timeValue}`;
+        const now = new Date();
+        const taskDateTime = new Date(dateTime);
+
+        if (taskDateTime < now) {
+          alert("You cannot add tasks for past dates or times.");
+          return;
+        }
+
+        if (tasks[dateTime]) {
+          alert(
+            "A task is already scheduled for this time. Please choose a different time."
+          );
+          return;
+        }
+
+        const task = document.createElement("div");
+        task.classList.add("task");
+        task.setAttribute("draggable", "true");
+        task.setAttribute("id", `task-${Date.now()}`);
+        task.setAttribute("data-datetime", dateTime);
+
+        const checkbox = document.createElement("input");
+        checkbox.setAttribute("type", "checkbox");
+
+        checkbox.onclick = function () {
+          const completedContainer =
+            document.getElementById("CompletedContainer");
+
+          if (checkbox.checked) {
+            task.style.textDecoration = "line-through";
+            task.querySelector("input").checked = true;
+            delete tasks[dateTime];
+            completedContainer.appendChild(task);
+          } else {
+            task.style.textDecoration = "none";
+            tasks[dateTime] = true;
+            taskList.appendChild(task);
+          }
+        };
+
+        const taskText = document.createElement("span");
+        taskText.innerText = input;
+
+        const dateTimeSpan = document.createElement("span");
+        dateTimeSpan.innerText = ` (${dateTime})`;
+        dateTimeSpan.style.fontSize = "1rem";
+        dateTimeSpan.style.color = "black";
+
+        taskText.appendChild(dateTimeSpan);
+        task.appendChild(checkbox);
+        task.appendChild(taskText);
+
+        taskList.appendChild(task);
+
+        document.getElementById("input").value = "";
+        document.getElementById("timeInput").value = "";
+        document.getElementById("dateInput").value = "";
+
+        task.ondragstart = function (event) {
+          event.dataTransfer.setData("text", event.target.id);
+        };
+
+        const dropzone = document.getElementById("CompletedContainer");
+
+        dropzone.ondragover = function (event) {
+          event.preventDefault();
+        };
+
+        dropzone.ondrop = function (event) {
+          event.preventDefault();
+          const eleId = event.dataTransfer.getData("text");
+          const draggedTask = document.getElementById(eleId);
+          if (draggedTask) {
+            dropzone.appendChild(draggedTask);
+            draggedTask.style.textDecoration = "line-through";
+            draggedTask.querySelector("input").checked = true;
+            delete tasks[draggedTask.getAttribute("data-datetime")];
+          }
+        };
+
+        tasks[dateTime] = true;
+      }
+    </script>
+  </body>
+</html>
