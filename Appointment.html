@@ -129,8 +129,6 @@
     </div>
     <script>
       const tasks = {};
-      const sortedArr = {};
-
       function addTask() {
         const input = document.getElementById("input").value.trim();
         const dateValue = document.getElementById("dateInput").value;
@@ -180,6 +178,7 @@
             task.style.textDecoration = "none";
             tasks[dateTime] = true;
             taskList.appendChild(task);
+            sortTasks();
           }
         };
 
@@ -224,6 +223,22 @@
         };
 
         tasks[dateTime] = true;
+
+        sortTasks();
+      }
+
+      function sortTasks() {
+        const taskList = document.getElementById("taskList");
+        const tasks = Array.from(taskList.children);
+
+        tasks.sort((a, b) => {
+          const dateA = new Date(a.getAttribute("data-datetime"));
+          const dateB = new Date(b.getAttribute("data-datetime"));
+          return dateA - dateB;
+        });
+
+        taskList.innerHTML = "";
+        tasks.forEach((task) => taskList.appendChild(task));
       }
     </script>
   </body>
